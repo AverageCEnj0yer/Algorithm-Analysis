@@ -1,0 +1,30 @@
+# Ignore PNG files (graphs, images)
+*.png
+
+# Ignore CMake build files and folders
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build/
+
+# Ignore executables (Linux, Mac, Windows)
+*.exe
+*.out
+*.obj
+*.dll
+*.so
+*.dylib
+test
+
+# Ignore other common generated files
+*.a
+*.o
+*.log
+*.tmp
+*.user
+*.swp
+
+# Ignore Python cache
+__pycache__/
+*.pyc
