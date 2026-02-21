@@ -105,6 +105,37 @@ void sort(int* arr, int low, int high) {
     }
 }
 }
+namespace HeapSort
+{
+    void heapify(int* arr, int i, int size)
+    {
+        int largest{i};
+
+        int leftChild{i * 2 + 1};
+        int rightChild {i * 2 + 2};
+
+        if(leftChild < size && arr[leftChild] > arr[largest])
+            largest = leftChild;
+        if(rightChild < size && arr[rightChild] > arr[largest])
+            largest = rightChild;
+        if (largest != i)
+        {
+            std::swap(arr[i], arr[largest]);
+            heapify(arr, largest, size);
+        }
+    }
+    void sort(int* arr, int low, int high)
+    {
+        int size = high - low + 1;
+        for (int i = size / 2 - 1; i >= 0; --i)
+            heapify(arr, i, size);
+        for(int i = size - 1; i > 0; --i)
+        {
+            std::swap(arr[0], arr[i]);
+            heapify(arr, 0, i);
+        }
+    }
+}
 namespace BubbleSort
 {
 void sort(int* arr, int left, int right)
@@ -124,6 +155,7 @@ void sort(int* arr, int left, int right)
     }
 }
 }
+//-----------Extras-------------
 namespace SelectionSort
 {
 void sort(int* arr, int left, int right)
@@ -159,36 +191,49 @@ void sort(int* arr, int left, int right)
 }
 }
 
-// int main()
-// {
-//     size_t size{};
-//     std::cin >> size;
-//     int* arr = new int[size];
+//helper
+void printArray(int* arr, int size)
+{
+    for(int i = 0; i < size; ++i)
+    {   
+        if (i > 0 && i % 10 == 0) std::cout << "\n";
+        std::cout << arr[i] << " ";
+    }
+    std::cout << "\n";
+}
 
-//     std::random_device rd{};
-//     std::seed_seq seq{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
-//     std::mt19937 mt{seq};
+int main()
+{
+    size_t size{};
+    std::cin >> size;
+    int* arr = new int[size];
 
-//     std::uniform_int_distribution generate(0, std::numeric_limits<int>::max());
+    std::random_device rd{};
+    std::seed_seq seq{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
+    std::mt19937 mt{seq};
 
-//     //warm up the random number generator
-//     for(int i = 0; i < 1000000; ++i)
-//         generate(mt);
+    std::uniform_int_distribution generate(0, 10/*std::numeric_limits<int>::max()*/);
 
-//     for(int i = 0; i < size; ++i)
-//         arr[i] = generate(mt);
+    //warm up the random number generator
+    for(int i = 0; i < 1000000; ++i)
+        generate(mt);
 
-//     //=============SORTIN AND TIME CALCULATION==================
-//     auto start = std::chrono::high_resolution_clock::now();
-//     QuickSort::sort(arr, 0, size - 1); //SORTING IS HERE
-//     auto end = std::chrono::high_resolution_clock::now();
+    for(int i = 0; i < size; ++i)
+        arr[i] = generate(mt);
 
-//     // Calculate duration in milliseconds
-//     std::chrono::duration<double, std::milli> duration = end - start;
-//     double ms = duration.count();
+    printArray(arr, size);
+    //=============SORTIN AND TIME CALCULATION==================
+    auto start = std::chrono::high_resolution_clock::now();
+    HeapSort::sort(arr, 0, size - 1); //SORTING IS HERE
+    auto end = std::chrono::high_resolution_clock::now();
+    printArray(arr, size);
+    std::cout << "\n";
+    // Calculate duration in milliseconds
+    std::chrono::duration<double, std::milli> duration = end - start;
+    double ms = duration.count();
 
-//     std::cout << ms << " Miliseconds\n";
+    std::cout << ms << " Miliseconds\n";
 
 
-//     delete[] arr;
-// }
+    delete[] arr;
+}
