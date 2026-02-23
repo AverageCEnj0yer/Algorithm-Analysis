@@ -5,7 +5,7 @@
 #include <random>
 #include <chrono>
 #include <limits>
-#include "sorting.cpp" // Assumes all sort namespaces are in sorting.cpp
+#include "sorting.cpp" 
 
 // Helper to generate arrays
 void fill_random_actual(int* arr, size_t size, int min_val, int max_val, std::mt19937& mt) {
@@ -42,35 +42,45 @@ double time_sort(Func sort_func, int* arr, size_t size) {
     return duration.count();
 }
 
+
 // Wrappers for sort functions to match signature
-typedef void(*SortFunc)(int*, int, int);
+typedef void(*SortFunc)(int*, size_t);
 
 void bubble_sort_wrapper(int* arr, size_t size) { BubbleSort::sort(arr, 0, static_cast<int>(size) - 1); }
-void selection_sort_wrapper(int* arr, size_t size) { SelectionSort::sort(arr, 0, static_cast<int>(size) - 1); }
-void insertion_sort_wrapper(int* arr, size_t size) { InsertionSort::sort(arr, 0, static_cast<int>(size) - 1); }
 void merge_sort_wrapper(int* arr, size_t size) { MergeSort::sort(arr, 0, static_cast<int>(size) - 1); }
 void quick_sort_wrapper(int* arr, size_t size) { QuickSort::sort(arr, 0, static_cast<int>(size) - 1); }
+void heap_sort_wrapper(int* arr, size_t size) { HeapSort::sort(arr, 0, static_cast<int>(size) - 1); }
+
+void steroids_bubble_sort_wrapper(int* arr, size_t size) { SteroidsBubbleSort::sort(arr, 0, static_cast<int>(size) - 1); }
+void steroids_merge_sort_wrapper(int* arr, size_t size) { SteroidsMergeSort::sort(arr, 0, static_cast<int>(size) - 1); }
+void steroids_quick_sort_wrapper(int* arr, size_t size) { SteroidsQuickSort::sort(arr, 0, static_cast<int>(size) - 1); }
+void steroids_heap_sort_wrapper(int* arr, size_t size) { SteroidsHeapSort::sort(arr, 0, static_cast<int>(size) - 1); }
 
 struct TestCase {
     const char* name;
     void (*fill_func)(int*, size_t, std::mt19937&);
 };
 
-void run_and_print(const char* algoname, void(*sort_func)(int*, size_t), const std::vector<size_t>& sizes, const std::vector<TestCase>& cases, std::mt19937& mt) {
+
+#include <fstream>
+void run_and_print_and_save(const char* algoname, void(*sort_func)(int*, size_t), const std::vector<size_t>& sizes, const std::vector<TestCase>& cases, std::mt19937& mt, const char* csv_folder) {
     std::cout << "\n=== " << algoname << " ===\n";
-    std::cout << std::setw(12) << "Size";
+    std::cout << std::left << std::setw(12) << "Size";
     for (const auto& tc : cases)
         std::cout << std::setw(18) << tc.name;
     std::cout << "\n";
 
     const int repeats = 5;
+    std::vector<std::vector<double>> results(cases.size(), std::vector<double>(sizes.size()));
 
-    for (size_t size : sizes) {
-        std::cout << std::setw(12) << size;
+    for (size_t s = 0; s < sizes.size(); ++s) {
+        size_t size = sizes[s];
+        std::cout << std::left << std::setw(12) << size;
         std::vector<int> arr(size);
         std::vector<int> arr_copy(size);
 
-        for (const auto& tc : cases) {
+        for (size_t t = 0; t < cases.size(); ++t) {
+            const auto& tc = cases[t];
             double total = 0.0;
             for (int rep = 0; rep < repeats; ++rep) {
                 tc.fill_func(arr.data(), size, mt);
@@ -78,11 +88,26 @@ void run_and_print(const char* algoname, void(*sort_func)(int*, size_t), const s
                 total += time_sort(sort_func, arr_copy.data(), size);
             }
             double avg = total / repeats;
+            results[t][s] = avg;
             std::cout << std::setw(18) << std::fixed << std::setprecision(3) << avg;
         }
         std::cout << "\n";
     }
+    // Save to CSV for plotting
+    std::ofstream csv(std::string(csv_folder) + "/" + algoname + ".csv");
+    csv << "Size";
+    for (const auto& tc : cases) csv << "," << tc.name;
+    csv << "\n";
+    for (size_t s = 0; s < sizes.size(); ++s) {
+        csv << sizes[s];
+        for (size_t t = 0; t < cases.size(); ++t) {
+            csv << "," << results[t][s];
+        }
+        csv << "\n";
+    }
+    csv.close();
 }
+
 
 int main() {
     std::random_device rd{};
@@ -99,11 +124,17 @@ int main() {
     std::vector<size_t> small_sizes = {10, 100, 1000, 10000};
     std::vector<size_t> large_sizes = {10, 100, 1000, 10000, 100000, 1000000, 10000000};
 
-    run_and_print("BubbleSort", bubble_sort_wrapper, small_sizes, cases, mt);
-    run_and_print("SelectionSort", selection_sort_wrapper, small_sizes, cases, mt);
-    run_and_print("InsertionSort", insertion_sort_wrapper, small_sizes, cases, mt);
-    run_and_print("MergeSort", merge_sort_wrapper, large_sizes, cases, mt);
-    run_and_print("QuickSort", quick_sort_wrapper, large_sizes, cases, mt);
+    // Normal algorithms
+    run_and_print_and_save("BubbleSort", bubble_sort_wrapper, small_sizes, cases, mt, "diagrams");
+    run_and_print_and_save("MergeSort", merge_sort_wrapper, large_sizes, cases, mt, "diagrams");
+    run_and_print_and_save("QuickSort", quick_sort_wrapper, small_sizes, cases, mt, "diagrams");
+    run_and_print_and_save("HeapSort", heap_sort_wrapper, large_sizes, cases, mt, "diagrams");
+
+    // Steroids algorithms
+    run_and_print_and_save("SteroidsBubbleSort", steroids_bubble_sort_wrapper, small_sizes, cases, mt, "diagrams_steroids");
+    run_and_print_and_save("SteroidsMergeSort", steroids_merge_sort_wrapper, large_sizes, cases, mt, "diagrams_steroids");
+    run_and_print_and_save("SteroidsQuickSort", steroids_quick_sort_wrapper, large_sizes, cases, mt, "diagrams_steroids");
+    run_and_print_and_save("SteroidsHeapSort", steroids_heap_sort_wrapper, large_sizes, cases, mt, "diagrams_steroids");
 
     return 0;
 }
