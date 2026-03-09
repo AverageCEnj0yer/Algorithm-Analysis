@@ -14,21 +14,22 @@ struct Metrics {
 
 namespace DFS {
 
+
 void dfs_internal(int u,
                   const std::vector<std::vector<int>>& graph,
                   std::vector<bool>& visited,
                   Metrics& m,
-                  size_t depth)
+                  size_t currentStackSize)
 {
     if (visited[u]) return;
 
     visited[u] = true;
     m.nodesVisited++;
 
-    m.maxMemory = std::max(m.maxMemory, depth);
+    m.maxMemory = std::max(m.maxMemory, currentStackSize);
 
     for (int v : graph[u]) {
-        dfs_internal(v, graph, visited, m, depth + 1);
+        dfs_internal(v, graph, visited, m, currentStackSize + 1);
     }
 }
 
@@ -69,17 +70,17 @@ void dfs_internal(int u,
                   const std::vector<std::vector<int>>& graph,
                   std::vector<char>& visited,
                   Metrics& m,
-                  size_t depth)
+                  size_t currentStackSize)
 {
     visited[u] = 1;            // OPT: early visited marking
     m.nodesVisited++;
-    m.maxMemory = std::max(m.maxMemory, depth); // OPT: track max recursion depth
+    m.maxMemory = std::max(m.maxMemory, currentStackSize); // OPT: track max stack size
 
     const auto& neighbors = graph[u]; // OPT: adjacency list caching
 
     for (int v : neighbors) {
         if (!visited[v]) {              // OPT: pre-recursion visited check
-            dfs_internal(v, graph, visited, m, depth + 1);
+            dfs_internal(v, graph, visited, m, currentStackSize + 1);
         }
     }
 }
@@ -306,7 +307,8 @@ namespace GraphGeneration {
     // ----------------------------
     std::vector<std::vector<int>> RandomGraph(int n, std::mt19937& rng) {
         std::vector<std::vector<int>> graph(n);
-        std::uniform_real_distribution<double> dist(0.0, 1.0);
+        std::uniform_real_distribution<double> dist(0.0, 0.1); //THIS IS SO GOOD, INSTEAD OF HAVING DIST USED ON POINTER (SEE BELOW, WE CREATE A TEST!)
+        std::uniform_real_distribution<double> test(0.0, 1.00);
         std::vector<double> node_probs(n);
         // Assign a random probability to each node
         for (int u = 0; u < n; ++u) {
@@ -317,7 +319,7 @@ namespace GraphGeneration {
             for (int v = u + 1; v < n; ++v) { // only u<v for undirected
                 // Use the average of node u and v's probabilities for edge existence
                 double edge_prob = (node_probs[u] + node_probs[v]) / 2.0;
-                if (dist(rng) < edge_prob) {
+                if (test(rng) < edge_prob) { // POININTER FOR PREVIOUS CAPS COMMENT. DIST(RNG)
                     graph[u].push_back(v);
                     graph[v].push_back(u);
                 }

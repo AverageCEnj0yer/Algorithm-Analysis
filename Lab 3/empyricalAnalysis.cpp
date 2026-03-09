@@ -64,10 +64,10 @@ int main() {
 
     // Graph generators
     vector<GraphGen> graphGens = {
+        {"RandomGraph", [](int n, mt19937& rng) { return GraphGeneration::RandomGraph(n, rng); }},
         {"Tree", [](int n, mt19937& rng) { return GraphGeneration::Tree(n, rng, 2, 2); }},
         {"CompleteGraph", [](int n, mt19937&) { return GraphGeneration::CompleteGraph(n); }},
         {"AlmostLinearGraph", [](int n, mt19937& rng) { return GraphGeneration::AlmostLinearGraph(n, rng); }},
-        {"RandomGraph", [](int n, mt19937& rng) { return GraphGeneration::RandomGraph(n, rng); }}
     };
 
     // Algorithms
@@ -75,7 +75,7 @@ int main() {
         {"DFS", DFS::traverse, DFS::find},
         {"DFSo", DFSo::traverse, DFSo::find},
         {"BFS", BFS::traverse, BFS::find},
-        {"BFSo", BFSo::traverse, BFSo::find}
+        {"BFSo", BFSo::traverse, BFSo::find},
     };
 
     string base = "/home/gabi/University Stuff/AA sem 4/Lab 3";
