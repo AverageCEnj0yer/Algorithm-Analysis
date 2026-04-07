@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <chrono>
 
-namespace MergeSort
+namespace SteroidsMergeSort
 {
 void merge(int* arr, int* aux, size_t left, size_t middle, size_t right)
 {
@@ -42,7 +42,61 @@ void sort(int* arr, size_t left, size_t right)
 
 }
 }
-namespace QuickSort
+namespace MergeSort
+{
+    void merge(int* arr, size_t left, size_t middle, size_t right)
+    {
+        size_t n1 = middle - left + 1;
+        size_t n2 = right - middle;
+
+        // Temporary arrays created per merge call
+        int* L = new int[n1];
+        int* R = new int[n2];
+
+        for (size_t i = 0; i < n1; ++i)
+            L[i] = arr[left + i];
+
+        for (size_t j = 0; j < n2; ++j)
+            R[j] = arr[middle + 1 + j];
+
+        size_t i = 0, j = 0, k = left;
+
+        while (i < n1 && j < n2)
+        {
+            if (L[i] <= R[j])
+                arr[k++] = L[i++];
+            else
+                arr[k++] = R[j++];
+        }
+
+        while (i < n1)
+            arr[k++] = L[i++];
+
+        while (j < n2)
+            arr[k++] = R[j++];
+
+        delete[] L;
+        delete[] R;
+    }
+    void mergeSort(int* arr, size_t left, size_t right)
+    {
+        if (left >= right)
+            return;
+
+        size_t middle = (left + right) / 2;
+
+        mergeSort(arr, left, middle);
+        mergeSort(arr, middle + 1, right);
+
+        merge(arr, left, middle, right);
+    }
+    void sort(int* arr, size_t left, size_t right)
+    {
+        mergeSort(arr, left, right);
+    }
+}
+
+namespace SteroidsQuickSort
 {
 // Manual sort for segments size 2 or 3 to protect Median-of-Three logic
 void smallSort(int* arr, int low, int high) {
@@ -105,25 +159,156 @@ void sort(int* arr, int low, int high) {
     }
 }
 }
+namespace QuickSort
+{
+    int partition(int* arr, int low, int high)
+    {
+        // Classic Lomuto partition
+        int pivot = arr[high];
+        int i = low - 1;
+
+        for (int j = low; j < high; ++j)
+        {
+            if (arr[j] <= pivot)
+            {
+                ++i;
+                std::swap(arr[i], arr[j]);
+            }
+        }
+
+        std::swap(arr[i + 1], arr[high]);
+        return i + 1;
+    }
+    void sort(int* arr, int low, int high)
+    {
+        if (low < high)
+        {
+            int pi = partition(arr, low, high);
+
+            // Classic full recursion
+            sort(arr, low, pi - 1);
+            sort(arr, pi + 1, high);
+        }
+    }
+}
+
+namespace HeapSort
+{
+    void heapify(int* arr, int i, int size)
+    {
+        int largest{i};
+
+        int leftChild{i * 2 + 1};
+        int rightChild {i * 2 + 2};
+
+        if(leftChild < size && arr[leftChild] > arr[largest])
+            largest = leftChild;
+        if(rightChild < size && arr[rightChild] > arr[largest])
+            largest = rightChild;
+        if (largest != i)
+        {
+            std::swap(arr[i], arr[largest]);
+            heapify(arr, largest, size);
+        }
+    }
+    void sort(int* arr, int low, int high)
+    {
+        int size = high - low + 1;
+        for (int i = size / 2 - 1; i >= 0; --i)
+            heapify(arr, i, size);
+        for(int i = size - 1; i > 0; --i)
+        {
+            std::swap(arr[0], arr[i]);
+            heapify(arr, 0, i);
+        }
+    }
+}
+namespace SteroidsHeapSort
+{   //remove recursion && unnecessary swaps
+    void heapify(int* arr, int i, int size)
+    {
+        int temp = arr[i];
+
+        while (2 * i + 1 < size)
+        {
+            int child = 2 * i + 1;
+
+            if (child + 1 < size && arr[child + 1] > arr[child])
+                child++;
+
+            if (arr[child] <= temp)
+                break;
+
+            arr[i] = arr[child];
+            i = child;
+        }
+
+        arr[i] = temp;
+    }
+    void sort(int* arr, int low, int high)
+    {
+        int size = high - low + 1;
+        for (int i = size / 2 - 1; i >= 0; --i)
+            heapify(arr, i, size);
+        for(int i = size - 1; i > 0; --i)
+        {
+            std::swap(arr[0], arr[i]);
+            heapify(arr, 0, i);
+        }
+    }
+}
+
+namespace SteroidsBubbleSort
+{ //aka cocktail shaker sort
+    void sort(int* arr, int left, int right)
+    {
+        while (left < right)
+        {
+            bool swapped = false;
+
+            // Forward pass
+            for (int i = left; i < right; ++i)
+            {
+                if (arr[i] > arr[i + 1])
+                {
+                    std::swap(arr[i], arr[i + 1]);
+                    swapped = true;
+                }
+            }
+            --right;
+
+            // Backward pass
+            for (int i = right; i > left; --i)
+            {
+                if (arr[i - 1] > arr[i])
+                {
+                    std::swap(arr[i - 1], arr[i]);
+                    swapped = true;
+                }
+            }
+            ++left;
+
+            if (!swapped)
+                break;
+        }
+    }
+}
 namespace BubbleSort
 {
 void sort(int* arr, int left, int right)
 {
     for (int i = left; i < right; ++i)
     {
-        bool swapped = false;
         for (int j = left; j < right - (i - left); ++j)
         {
             if (arr[j] > arr[j + 1])
-            {
                 std::swap(arr[j], arr[j + 1]);
-                swapped = true;
-            }
         }
-        if (!swapped) break;
     }
 }
 }
+
+//-----------Extras-------------
 namespace SelectionSort
 {
 void sort(int* arr, int left, int right)
@@ -159,6 +344,17 @@ void sort(int* arr, int left, int right)
 }
 }
 
+//helper
+void printArray(int* arr, int size)
+{
+    for(int i = 0; i < size; ++i)
+    {   
+        if (i > 0 && i % 10 == 0) std::cout << "\n";
+        std::cout << arr[i] << " ";
+    }
+    std::cout << "\n";
+}
+
 // int main()
 // {
 //     size_t size{};
@@ -169,7 +365,7 @@ void sort(int* arr, int left, int right)
 //     std::seed_seq seq{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
 //     std::mt19937 mt{seq};
 
-//     std::uniform_int_distribution generate(0, std::numeric_limits<int>::max());
+//     std::uniform_int_distribution generate(0, 10/*std::numeric_limits<int>::max()*/);
 
 //     //warm up the random number generator
 //     for(int i = 0; i < 1000000; ++i)
@@ -178,11 +374,13 @@ void sort(int* arr, int left, int right)
 //     for(int i = 0; i < size; ++i)
 //         arr[i] = generate(mt);
 
+//     // printArray(arr, size);
 //     //=============SORTIN AND TIME CALCULATION==================
 //     auto start = std::chrono::high_resolution_clock::now();
-//     QuickSort::sort(arr, 0, size - 1); //SORTING IS HERE
+//     SteroidsBubbleSort::sort(arr, 0, size - 1); //SORTING IS HERE
 //     auto end = std::chrono::high_resolution_clock::now();
-
+//     // printArray(arr, size);
+//     std::cout << "\n";
 //     // Calculate duration in milliseconds
 //     std::chrono::duration<double, std::milli> duration = end - start;
 //     double ms = duration.count();
