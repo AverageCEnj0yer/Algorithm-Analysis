@@ -29,5 +29,4 @@ test
 __pycache__/
 *.pyc
 
-#ignore csv files (data files)
 *.csv
